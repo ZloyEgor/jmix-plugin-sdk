@@ -1,0 +1,107 @@
+{
+  "$schema": "https://jmix.io/schemas/plugin-v1.json",
+  "id": "io.jmix.plugins.advanced-grid",
+  "name": "Advanced Grid Component",
+  "version": "2.1.0",
+  "description": "Enhanced data grid with advanced filtering, sorting, pagination, and export capabilities",
+  
+  "author": {
+    "name": "Jmix Community",
+    "email": "community@jmix.io",
+    "url": "https://github.com/jmix-plugins/advanced-grid"
+  },
+  
+  "license": {
+    "type": "Apache-2.0",
+    "url": "https://www.apache.org/licenses/LICENSE-2.0"
+  },
+  
+  "compatibility": {
+    "jmix": ">=2.0.0 <3.0.0",
+    "java": ">=17",
+    "spring-boot": ">=3.0.0"
+  },
+  
+  "dependencies": {
+    "plugins": [
+      {
+        "id": "io.jmix.flowui",
+        "version": "^2.0.0",
+        "comment": "Required for UI component registration"
+      }
+    ],
+    "maven": [
+      {
+        "groupId": "org.apache.poi",
+        "artifactId": "poi-ooxml",
+        "version": "5.2.5",
+        "comment": "For Excel export functionality"
+      }
+    ]
+  },
+  
+  "components": [
+    {
+      "tag": "advancedGrid",
+      "class": "io.jmix.plugins.advancedgrid.components.AdvancedGrid",
+      "icon": "assets/grid-icon.svg",
+      "description": "Main grid component with advanced features"
+    }
+  ],
+  
+  "permissions": [
+    "jmix.data.read",
+    "jmix.ui.component.register",
+    "jmix.file.export"
+  ],
+  
+  "entrypoints": {
+    "main": "io.jmix.plugins.advancedgrid.AdvancedGridPlugin",
+    "config": "config/schema.json"
+  },
+  
+  "configuration": {
+    "schema": "config/schema.json",
+    "defaults": {
+      "pageSize": 20,
+      "enableVirtualScroll": true,
+      "enableExport": true,
+      "exportFormats": ["xlsx", "csv", "pdf"]
+    }
+  },
+  
+  "marketplace": {
+    "categories": ["UI Components", "Data Display", "Enterprise"],
+    "keywords": [
+      "grid",
+      "table",
+      "datagrid",
+      "export",
+      "filter",
+      "sort",
+      "pagination",
+      "enterprise"
+    ],
+    "icon": "assets/marketplace-icon.png",
+    "screenshots": [
+      "assets/screenshot-basic.png",
+      "assets/screenshot-filtering.png",
+      "assets/screenshot-export.png"
+    ],
+    "demo": "https://demo.jmix-plugins.io/advanced-grid"
+  },
+  
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmix-plugins/advanced-grid"
+  },
+  
+  "documentation": "https://docs.jmix-plugins.io/advanced-grid",
+  "changelog": "CHANGELOG.md",
+  
+  "support": {
+    "email": "support@jmix-plugins.io",
+    "forum": "https://forum.jmix.io/c/plugins/advanced-grid",
+    "issues": "https://github.com/jmix-plugins/advanced-grid/issues"
+  }
+}

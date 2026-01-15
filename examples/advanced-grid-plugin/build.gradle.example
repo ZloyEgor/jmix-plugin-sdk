@@ -1,0 +1,133 @@
+// Example build.gradle for Jmix plugin development
+// This shows how the future Gradle plugin would work
+
+plugins {
+    id 'java'
+    id 'io.jmix' version '2.0.0'
+    id 'io.jmix.plugin-sdk' version '1.0.0'  // Future Gradle plugin for plugin development
+}
+
+group = 'io.jmix.plugins'
+version = '2.1.0'
+
+// Java version
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+// Jmix plugin configuration
+jmixPlugin {
+    // Plugin metadata (generates plugin.json automatically)
+    pluginId = 'io.jmix.plugins.advanced-grid'
+    pluginName = 'Advanced Grid Component'
+    pluginDescription = 'Enhanced data grid with advanced features'
+    pluginVersion = version
+    
+    // Main plugin class
+    mainClass = 'io.jmix.plugins.advancedgrid.AdvancedGridPlugin'
+    
+    // Author info
+    author {
+        name = 'Jmix Community'
+        email = 'community@jmix.io'
+        url = 'https://github.com/jmix-plugins'
+    }
+    
+    // License
+    license {
+        type = 'Apache-2.0'
+        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+    }
+    
+    // Compatibility requirements
+    compatibility {
+        jmix = '>=2.0.0 <3.0.0'
+        java = '>=17'
+        springBoot = '>=3.0.0'
+    }
+    
+    // Plugin dependencies
+    dependencies {
+        plugin 'io.jmix.flowui:^2.0.0'
+    }
+    
+    // Components provided
+    components {
+        component 'advancedGrid', 'io.jmix.plugins.advancedgrid.components.AdvancedGrid'
+    }
+    
+    // Required permissions
+    permissions = [
+        'jmix.data.read',
+        'jmix.ui.component.register',
+        'jmix.file.export'
+    ]
+    
+    // Marketplace metadata
+    marketplace {
+        categories = ['UI Components', 'Data Display', 'Enterprise']
+        keywords = ['grid', 'table', 'export', 'filter']
+        icon = 'assets/marketplace-icon.png'
+        screenshots = [
+            'assets/screenshot-basic.png',
+            'assets/screenshot-filtering.png'
+        ]
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://nexus.jmix.io/repository/public' }
+}
+
+dependencies {
+    // Jmix dependencies
+    implementation 'io.jmix.core:jmix-core'
+    implementation 'io.jmix.flowui:jmix-flowui'
+    
+    // Plugin SDK
+    implementation 'io.jmix.plugin:jmix-plugin-sdk:1.0.0'
+    
+    // Additional dependencies for this plugin
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'  // Excel export
+    
+    // Testing
+    testImplementation 'io.jmix.plugin:jmix-plugin-sdk-test:1.0.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.jmix:jmix-test-support'
+}
+
+// Tasks automatically added by plugin-sdk plugin:
+
+// generatePluginDescriptor - generates META-INF/plugin.json from jmixPlugin config
+// validatePlugin - validates plugin structure and dependencies
+// packagePlugin - creates plugin JAR with all metadata
+// publishPlugin - publishes to marketplace (with auth)
+// installPlugin - installs locally for testing
+
+tasks.named('jar') {
+    dependsOn 'generatePluginDescriptor'
+    
+    // Include generated plugin.json
+    from("${buildDir}/generated/plugin.json") {
+        into 'META-INF'
+    }
+    
+    // Set manifest attributes
+    manifest {
+        attributes(
+            'Plugin-Id': jmixPlugin.pluginId,
+            'Plugin-Version': jmixPlugin.pluginVersion,
+            'Plugin-Main-Class': jmixPlugin.mainClass,
+            'Jmix-Version-Range': jmixPlugin.compatibility.jmix
+        )
+    }
+}
+
+// Custom task for local testing
+tasks.register('installLocal', Copy) {
+    dependsOn 'jar'
+    from jar.archiveFile
+    into "${System.getProperty('user.home')}/.jmix/plugins"
+}

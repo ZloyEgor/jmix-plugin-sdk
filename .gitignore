@@ -1,0 +1,28 @@
+# Java / Gradle
+.gradle/
+build/
+out/
+*.class
+
+# Node / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+.npm/
+.eslintcache
+
+# IDE / editors
+.idea/
+*.iml
+.vscode/
+.fleet/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Local environment
+.env
+.env.local
