@@ -1,1 +1,7 @@
-// placeholder, will be filled in later commits
+description = 'Jmix Plugin SDK core: framework-agnostic plugin API'
+
+dependencies {
+    api "org.slf4j:slf4j-api:${slf4jVersion}"
+
+    testImplementation "ch.qos.logback:logback-classic:1.5.6"
+}
