@@ -1,6 +1,12 @@
 package io.jmix.plugin.core;
 
+import io.jmix.plugin.core.event.EventBus;
+import org.slf4j.Logger;
+
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Base class for Jmix plugins.
@@ -103,6 +109,61 @@ public abstract class JmixPlugin {
      */
     protected PluginContext getContext() {
         return context;
+    }
+
+    /**
+     * Convenience accessor for the plugin-scoped logger.
+     */
+    protected Logger logger() {
+        return requireContext().getLogger();
+    }
+
+    /**
+     * Convenience accessor for the plugin event bus.
+     */
+    protected EventBus eventBus() {
+        return requireContext().getEventBus();
+    }
+
+    /**
+     * Emits an event through the plugin event bus.
+     */
+    protected void emit(String topic, Object payload) {
+        eventBus().emit(topic, payload);
+    }
+
+    /**
+     * Subscribes a listener to a topic on the plugin event bus.
+     */
+    protected EventBus.Subscription on(String topic, Consumer<Object> listener) {
+        return eventBus().on(topic, listener);
+    }
+
+    /**
+     * Reads a configuration value using the runtime context.
+     */
+    protected Optional<Object> getConfig(String key) {
+        return requireContext().getConfig(key);
+    }
+
+    /**
+     * Reads a typed configuration value, falling back to {@code defaultValue}
+     * when the key is missing or has the wrong type.
+     */
+    protected <T> T getConfig(String key, T defaultValue, Class<T> type) {
+        return requireContext().getConfig(key, type).orElse(defaultValue);
+    }
+
+    /**
+     * Persists a configuration value via the runtime context.
+     */
+    protected void setConfig(String key, Object value) {
+        requireContext().setConfig(key, value);
+    }
+
+    private PluginContext requireContext() {
+        return Objects.requireNonNull(context,
+                "Plugin context is not available before the plugin has been bound by the manager");
     }
 
     /**
