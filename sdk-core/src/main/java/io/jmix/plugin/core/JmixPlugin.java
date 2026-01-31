@@ -1,5 +1,6 @@
 package io.jmix.plugin.core;
 
+import io.jmix.plugin.core.descriptor.PluginDescriptor;
 import io.jmix.plugin.core.event.EventBus;
 import org.slf4j.Logger;
 
@@ -23,7 +24,7 @@ import java.util.function.Consumer;
  */
 public abstract class JmixPlugin {
 
-    private volatile Object descriptorRef;
+    private volatile PluginDescriptor descriptor;
     private volatile PluginContext context;
     private volatile boolean loaded;
 
@@ -65,33 +66,32 @@ public abstract class JmixPlugin {
      * Identifier of the plugin, taken from the descriptor when known.
      */
     public String getId() {
-        Object d = descriptorRef;
-        if (d == null) {
-            return "unknown";
-        }
-        return DescriptorAccess.id(d);
+        PluginDescriptor d = descriptor;
+        return d == null || d.getId() == null ? "unknown" : d.getId();
     }
 
     /**
      * Human-readable name of the plugin.
      */
     public String getName() {
-        Object d = descriptorRef;
-        if (d == null) {
-            return "Unknown Plugin";
-        }
-        return DescriptorAccess.name(d);
+        PluginDescriptor d = descriptor;
+        return d == null || d.getName() == null ? "Unknown Plugin" : d.getName();
     }
 
     /**
      * Semantic version of the plugin.
      */
     public String getVersion() {
-        Object d = descriptorRef;
-        if (d == null) {
-            return "0.0.0";
-        }
-        return DescriptorAccess.version(d);
+        PluginDescriptor d = descriptor;
+        return d == null || d.getVersion() == null ? "0.0.0" : d.getVersion();
+    }
+
+    /**
+     * Plugin descriptor as bound by the manager. May return {@code null}
+     * when the plugin is constructed but not yet registered.
+     */
+    public PluginDescriptor getDescriptor() {
+        return descriptor;
     }
 
     /**
@@ -170,8 +170,8 @@ public abstract class JmixPlugin {
      * Internal mutator invoked by {@code JmixPluginManager}. Not intended
      * for direct use by plugin code.
      */
-    void bind(Object descriptor, PluginContext context) {
-        this.descriptorRef = descriptor;
+    void bind(PluginDescriptor descriptor, PluginContext context) {
+        this.descriptor = descriptor;
         this.context = context;
     }
 
@@ -189,37 +189,5 @@ public abstract class JmixPlugin {
      */
     void markUnloaded() {
         this.loaded = false;
-    }
-
-    /**
-     * Indirection layer that reads descriptor fields without forcing
-     * {@code JmixPlugin} to depend on the descriptor POJO that is
-     * introduced in a later module milestone.
-     */
-    private static final class DescriptorAccess {
-
-        private DescriptorAccess() {
-        }
-
-        static String id(Object descriptor) {
-            return readString(descriptor, "getId", "unknown");
-        }
-
-        static String name(Object descriptor) {
-            return readString(descriptor, "getName", "Unknown Plugin");
-        }
-
-        static String version(Object descriptor) {
-            return readString(descriptor, "getVersion", "0.0.0");
-        }
-
-        private static String readString(Object descriptor, String method, String fallback) {
-            try {
-                Object value = descriptor.getClass().getMethod(method).invoke(descriptor);
-                return value == null ? fallback : value.toString();
-            } catch (ReflectiveOperationException ex) {
-                return fallback;
-            }
-        }
     }
 }

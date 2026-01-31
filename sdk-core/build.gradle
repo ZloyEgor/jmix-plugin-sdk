@@ -2,6 +2,9 @@ description = 'Jmix Plugin SDK core: framework-agnostic plugin API'
 
 dependencies {
     api "org.slf4j:slf4j-api:${slf4jVersion}"
+    api "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    api "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}"
+    api "org.semver4j:semver4j:${semver4jVersion}"
 
     testImplementation "ch.qos.logback:logback-classic:1.5.6"
 }
