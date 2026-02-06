@@ -7,9 +7,14 @@ import io.jmix.plugin.core.lifecycle.PluginLifecycleListener;
 import io.jmix.plugin.core.lifecycle.PluginLoadedEvent;
 import io.jmix.plugin.core.lifecycle.PluginRegisteredEvent;
 import io.jmix.plugin.core.lifecycle.PluginUnloadedEvent;
+import io.jmix.plugin.core.loader.JarPluginLoader;
+import io.jmix.plugin.core.loader.PluginClassLoader;
 import io.jmix.plugin.core.version.VersionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -45,12 +50,14 @@ public class JmixPluginManager {
     private final Map<String, PluginState> states = new ConcurrentHashMap<>();
     private final Map<String, String> errors = new ConcurrentHashMap<>();
     private final Map<String, Instant> loadedAt = new ConcurrentHashMap<>();
+    private final Map<String, PluginClassLoader> classLoaders = new ConcurrentHashMap<>();
     private final List<String> loadOrder = new ArrayList<>();
     private final List<PluginLifecycleListener> listeners = new CopyOnWriteArrayList<>();
 
     private final String platformVersion;
     private final PluginContextFactory contextFactory;
     private final PluginDescriptorReader descriptorReader;
+    private final JarPluginLoader jarLoader;
 
     public JmixPluginManager(String platformVersion) {
         this(platformVersion, PluginContextFactory.inMemory(), new PluginDescriptorReader());
@@ -62,6 +69,23 @@ public class JmixPluginManager {
         this.platformVersion = platformVersion == null ? "0.0.0" : platformVersion;
         this.contextFactory = contextFactory == null ? PluginContextFactory.inMemory() : contextFactory;
         this.descriptorReader = descriptorReader == null ? new PluginDescriptorReader() : descriptorReader;
+        this.jarLoader = new JarPluginLoader(this.descriptorReader);
+    }
+
+    /**
+     * Reads a plugin from a JAR file, registers it with the manager and
+     * eagerly loads it. The associated class loader is tracked and
+     * closed when the plugin is unloaded.
+     */
+    public synchronized JmixPlugin registerFromJar(Path jarFile) throws PluginException {
+        try {
+            JarPluginLoader.Loaded loaded = jarLoader.load(jarFile, getClass().getClassLoader());
+            register(loaded.plugin(), loaded.descriptor());
+            classLoaders.put(loaded.descriptor().getId(), loaded.classLoader());
+            return loaded.plugin();
+        } catch (IOException ex) {
+            throw new PluginException("Failed to read plugin JAR " + jarFile + ": " + ex.getMessage(), ex);
+        }
     }
 
     /**
@@ -160,6 +184,7 @@ public class JmixPluginManager {
             states.put(pluginId, PluginState.UNLOADED);
             loadedAt.remove(pluginId);
             loadOrder.remove(pluginId);
+            closeClassLoader(pluginId);
             publish(new PluginUnloadedEvent(pluginId));
         } catch (PluginException ex) {
             recordError(pluginId, ex);
@@ -167,6 +192,17 @@ public class JmixPluginManager {
         } catch (RuntimeException ex) {
             recordError(pluginId, ex);
             throw new PluginException("Failed to unload plugin " + pluginId + ": " + ex.getMessage(), ex);
+        }
+    }
+
+    private void closeClassLoader(String pluginId) {
+        PluginClassLoader cl = classLoaders.remove(pluginId);
+        if (cl != null) {
+            try {
+                cl.close();
+            } catch (IOException ex) {
+                LOG.warn("Failed to close class loader for plugin {}: {}", pluginId, ex.toString());
+            }
         }
     }
 
