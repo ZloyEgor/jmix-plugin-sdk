@@ -1,1 +1,17 @@
-// placeholder, will be filled in later commits
+description = 'Jmix Plugin SDK Spring Boot integration'
+
+dependencies {
+    api project(':sdk-core')
+    api "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
+    api "org.springframework.boot:spring-boot:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+}
+
+test {
+    useJUnitPlatform()
+}
