@@ -107,7 +107,7 @@ public abstract class JmixPlugin {
      * manager. Returns {@code null} for plugins that have not been
      * registered yet.
      */
-    protected PluginContext getContext() {
+    public PluginContext getContext() {
         return context;
     }
 
