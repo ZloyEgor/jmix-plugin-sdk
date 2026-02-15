@@ -1,1 +1,13 @@
-// placeholder, will be filled in later commits
+description = 'Jmix Plugin SDK test harness: JUnit 5 utilities for plugin authors'
+
+dependencies {
+    api project(':sdk-core')
+    api "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    api "org.mockito:mockito-core:${mockitoVersion}"
+    api "org.assertj:assertj-core:${assertjVersion}"
+
+    implementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation "ch.qos.logback:logback-classic:1.5.6"
+}
