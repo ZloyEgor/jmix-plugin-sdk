@@ -1,0 +1,50 @@
+{
+  "$schema": "https://jmix.io/schemas/plugin-v1.json",
+  "id": "io.jmix.examples.hello-world",
+  "name": "Hello World Plugin",
+  "version": "1.0.0",
+  "description": "A simple example plugin demonstrating the Jmix Plugin SDK",
+
+  "author": {
+    "name": "Jmix Team",
+    "email": "info@jmix.io",
+    "url": "https://jmix.io"
+  },
+
+  "license": {
+    "type": "Apache-2.0",
+    "url": "https://www.apache.org/licenses/LICENSE-2.0"
+  },
+
+  "compatibility": {
+    "jmix": ">=2.0.0 <3.0.0",
+    "java": ">=17"
+  },
+
+  "entrypoints": {
+    "main": "io.jmix.examples.helloworld.HelloWorldPlugin"
+  },
+
+  "permissions": [
+    "jmix.ui.component.register"
+  ],
+
+  "configuration": {
+    "defaults": {
+      "greeting": "Hello, World!"
+    }
+  },
+
+  "marketplace": {
+    "categories": ["Examples", "Getting Started"],
+    "keywords": ["example", "hello-world", "tutorial"],
+    "icon": "assets/icon.png"
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmix-framework/jmix-plugin-sdk"
+  },
+
+  "documentation": "https://docs.jmix.io/plugin-sdk/examples/hello-world"
+}

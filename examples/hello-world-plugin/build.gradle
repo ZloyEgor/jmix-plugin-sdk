@@ -1,1 +1,16 @@
-// placeholder, will be filled in later commits
+description = 'Jmix Plugin SDK example: hello-world plugin'
+
+dependencies {
+    api project(':sdk-core')
+
+    testImplementation project(':sdk-test')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Plugin-Id': 'io.jmix.examples.hello-world',
+                'Plugin-Class': 'io.jmix.examples.helloworld.HelloWorldPlugin'
+        )
+    }
+}
