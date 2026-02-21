@@ -1,1 +1,16 @@
-// placeholder, will be filled in later commits
+description = 'Jmix Plugin SDK example: advanced-grid plugin skeleton'
+
+dependencies {
+    api project(':sdk-core')
+
+    testImplementation project(':sdk-test')
+}
+
+jar {
+    manifest {
+        attributes(
+                'Plugin-Id': 'io.jmix.plugins.advanced-grid',
+                'Plugin-Class': 'io.jmix.plugins.advancedgrid.AdvancedGridPlugin'
+        )
+    }
+}
