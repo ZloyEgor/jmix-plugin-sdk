@@ -1,25 +1,59 @@
 # Jmix Plugin SDK
 
+## Прототипная реализация механизма расширяемости
+
+| Параметр | Значение |
+|----------|----------|
+| Версия | 1.0.0-alpha |
+| Статус | TypeScript-прототип + Java-реализация (sdk-core, sdk-spring, sdk-test) |
+| Последнее обновление | 27 февраля 2026 г. |
+
+---
+
 ## Замечание о статусе прототипа
 
-Настоящий артефакт представляет собой реализацию на TypeScript/JavaScript и служит концептуальной демонстрацией предложенной архитектуры плагинов. 
+Репозиторий содержит две согласованные ветви реализации:
 
-Текущая реализация (TypeScript):
+1. **TypeScript-прототип** — расположен в подкаталоге `prototype-ts/`. Является спецификацией архитектуры и интерфейсов SDK. Не интегрируется с Java-кодовой базой Jmix.
+2. **Java-реализация** — модули `sdk-core/`, `sdk-spring/`, `sdk-test/` и Java-версии примеров `examples/hello-world-plugin/`, `examples/advanced-grid-plugin/`. Реализация переносит API прототипа на Java 17 и Spring Boot 3, обеспечивает изоляцию через собственный `URLClassLoader`, предоставляет REST API управления плагинами и испытательный стенд на базе JUnit 5.
+
+TypeScript-прототип:
 
 - демонстрирует проектируемый интерфейс и архитектуру SDK;
 - иллюстрирует жизненный цикл плагина;
 - валидирует формат дескриптора;
 - содержит примеры использования;
+- не интегрирован с Java-кодовой базой Jmix.
 
-Для производственного использования необходима повторная реализация на Java:
+Java-реализация:
 
-- классы, расширяющие существующую инфраструктуру `@JmixModule`;
-- интеграция со Spring Boot `ApplicationContext`;
-- изоляция плагинов через `ClassLoader`;
-- реализация подсистемы безопасности и песочницы;
-- интеграция с Jmix Studio.
+- предоставляет `JmixPlugin`, `JmixPluginManager`, `PluginContext` и сервисные интерфейсы в модуле `sdk-core`;
+- содержит автоконфигурацию Spring Boot и REST-контроллер `/api/plugins` в модуле `sdk-spring`;
+- предлагает аннотацию `@JmixPluginTest` и `MockPluginContext` для unit-тестов в модуле `sdk-test`;
+- использует изолированный `PluginClassLoader` и поддерживает регистрацию плагинов из JAR-файлов;
+- покрыта модульными тестами; команда `./gradlew build` выполняется без ошибок.
 
-Стратегия миграции: настоящий прототип используется как спецификация для Java-реализации, интегрируемой с `io.jmix.core.JmixModulesProcessor` и инфраструктурой Spring Boot. Подробности приведены в разделе «Интеграция с фреймворком Jmix».
+Для полноценной интеграции с Jmix Studio и `JmixModulesProcessor` потребуется дополнительный связующий модуль; объём текущей реализации соответствует SDK-уровню и не затрагивает внутреннюю инфраструктуру Jmix.
+
+## Быстрый старт (Java)
+
+```bash
+./gradlew :sdk-core:build
+./gradlew :examples:hello-world-plugin:build
+./gradlew build      # сборка всех модулей и запуск тестов
+```
+
+Подключение SDK в потребительский проект:
+
+```groovy
+dependencies {
+    implementation 'io.jmix.plugin:sdk-core:1.0.0-alpha.1'
+    implementation 'io.jmix.plugin:sdk-spring:1.0.0-alpha.1'
+    testImplementation 'io.jmix.plugin:sdk-test:1.0.0-alpha.1'
+}
+```
+
+При наличии `sdk-spring` Spring Boot автоматически активирует `PluginAutoConfiguration` и зарегистрирует `JmixPluginManager` в `ApplicationContext`.
 
 ---
 
@@ -63,26 +97,33 @@ Jmix Plugin SDK — инструментарий для разработки, т
 
 ## 2. Архитектура SDK
 
-Логическая структура SDK представлена ниже. Каталоги `cli/` и часть подкаталогов в `examples/`, отмеченные как проектируемые, в текущей версии репозитория отсутствуют и предполагаются к реализации.
+Логическая структура SDK представлена ниже. Подсистема `cli/` и часть платформенных API в Java-модулях помечены как проектируемые и в текущей версии репозитория не реализованы.
 
 ```
 jmix-plugin-sdk/
-├── core/                          # ядро SDK
-│   ├── src/
-│   │   ├── plugin/                # подсистема плагинов
-│   │   │   ├── Plugin.ts          # базовый класс плагина
-│   │   │   ├── PluginDescriptor.ts
-│   │   │   ├── PluginManager.ts
-│   │   │   └── PluginContext.ts
-│   │   ├── component/             # подсистема компонентов (проектируемая)
-│   │   ├── hooks/                 # обработчики жизненного цикла (проектируемая)
-│   │   ├── api/                   # платформенные API (проектируемая)
-│   │   └── index.ts               # публичный API
-│   ├── package.json
-│   └── tsconfig.json
-├── examples/                      # примеры плагинов
-│   ├── hello-world-plugin/        # демонстрационный плагин
-│   └── advanced-grid-plugin/      # пример сложного компонента
+├── settings.gradle, build.gradle, gradle.properties
+├── gradlew, gradlew.bat, gradle/wrapper/...
+├── README.md, integration.md, prototype.md
+├── LICENSE, .gitignore
+├── prototype-ts/                  # TypeScript-прототип (спецификация)
+│   ├── core/                      # классы Plugin, PluginManager, PluginContext
+│   └── examples/hello-world-plugin/
+├── sdk-core/                      # Java-ядро SDK (io.jmix.plugin.core)
+│   ├── build.gradle
+│   └── src/main/java/...          # JmixPlugin, JmixPluginManager,
+│                                  # PluginContext, PluginDescriptor,
+│                                  # PluginClassLoader, JarPluginLoader
+├── sdk-spring/                    # Spring Boot интеграция и REST API
+│   ├── build.gradle
+│   └── src/main/java/...          # PluginAutoConfiguration,
+│                                  # SpringPluginContext, PluginRestController
+├── sdk-test/                      # JUnit 5 тестовый каркас
+│   ├── build.gradle
+│   └── src/main/java/...          # @JmixPluginTest, MockPluginContext,
+│                                  # TestPluginManager
+├── examples/                      # примеры плагинов (Java + plugin.json)
+│   ├── hello-world-plugin/
+│   └── advanced-grid-plugin/
 └── cli/                           # инструмент командной строки (проектируемая часть)
 ```
 
